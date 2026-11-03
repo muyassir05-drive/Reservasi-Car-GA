@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Reservasi Kendaraan Operasional - General Affair</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#0f4c81',
+                            800: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- TOP HEADER -->
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Brand Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-brand-600 rounded-lg text-white shadow-inner">
+                        <i class="fa-solid fa-car-side text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight tracking-wide">GA Fleets Management</h1>
+                        <p class="text-xs text-slate-400">Sistem Reservasi & Ekspor-Impor Data GA</p>
+                    </div>
+                </div>
+
+                <!-- Role Switcher & User Profile -->
+                <div class="flex items-center space-x-4">
+                    <div class="bg-slate-800 p-1 rounded-xl border border-slate-700 flex items-center">
+                        <span class="text-xs font-medium text-slate-400 px-2.5 hidden sm:inline-block">Akses:</span>
+                        <button id="btnRoleKaryawan" onclick="switchRole('karyawan')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-1.5 bg-brand-600 text-white shadow">
+                            <i class="fa-solid fa-user text-xs"></i>
+                            <span>Karyawan</span>
+                        </button>
+                        <button id="btnRoleAdmin" onclick="switchRole('admin')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all duration-200 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-user-gear text-xs"></i>
+                            <span>Admin GA</span>
+                        </button>
+                    </div>
+
+                    <!-- User Info Badge -->
+                    <div class="hidden md:flex items-center space-x-2 pl-3 border-l border-slate-700">
+                        <div class="w-8 h-8 rounded-full bg-brand-700 flex items-center justify-center font-bold text-xs border border-brand-500" id="userAvatar">AK</div>
+                        <div class="text-left text-xs">
+                            <p class="font-semibold text-slate-200" id="userName">Ahmad Karyawan</p>
+                            <p class="text-slate-400 text-[10px]" id="userRoleTitle">Requestor (IT)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <nav class="bg-slate-800 border-t border-slate-700/60 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto flex space-x-1 overflow-x-auto py-2 text-sm font-medium no-scrollbar">
+                <!-- Karyawan Tabs -->
+                <button id="tabFormReservasi" onclick="switchTab('form-reservasi')" class="tab-btn px-4 py-2 rounded-lg text-white bg-brand-600 shadow-sm flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-file-pen text-xs"></i>
+                    <span>Form Pengajuan</span>
+                </button>
+                <button id="tabRiwayatSaya" onclick="switchTab('riwayat-saya')" class="tab-btn px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                    <span>Riwayat Saya</span>
+                    <span id="badgeMyCount" class="bg-slate-900 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-700">0</span>
+                </button>
+
+                <!-- Admin GA Tabs -->
+                <button id="tabDashboardAdmin" onclick="switchTab('dashboard-admin')" class="tab-btn hidden px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-chart-pie text-xs"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button id="tabPengajuanMasuk" onclick="switchTab('pengajuan-masuk')" class="tab-btn hidden px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-list-check text-xs"></i>
+                    <span>Kelola Pengajuan</span>
+                    <span id="badgePendingCount" class="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+                <button id="tabMasterKendaraan" onclick="switchTab('master-kendaraan')" class="tab-btn hidden px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-car text-xs"></i>
+                    <span>Master Kendaraan</span>
+                </button>
+
+                <!-- Shared/Admin Tab: Data Portability -->
+                <button id="tabDataPortability" onclick="switchTab('data-portability')" class="tab-btn px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-file-csv text-xs"></i>
+                    <span>Pusat Ekspor & Impor</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Toast Container -->
+        <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: FORM PENGAJUAN (KARYAWAN)          -->
+        <!-- ========================================== -->
+        <section id="secFormReservasi" class="tab-content space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div class="border-b border-slate-100 bg-slate-50/50 p-5 sm:px-8">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-calendar-plus text-brand-600"></i>
+                        <span>Formulir Pengajuan Reservasi Kendaraan</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Isi data pengajuan penggunaan armada kendaraan dinas operasional perusahaan.</p>
+                </div>
+
+                <form id="formReservasi" onsubmit="handleFormSubmit(event)" class="p-5 sm:p-8 space-y-6">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-1">1. Informasi Pemohon</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Requestor <span class="text-red-500">*</span></label>
+                                <input type="text" id="reqNama" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Contoh: Budi Santoso">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Email Karyawan <span class="text-red-500">*</span></label>
+                                <input type="email" id="reqEmail" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="budi@company.com">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Divisi / Departemen <span class="text-red-500">*</span></label>
+                                <select id="reqDivisi" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none bg-white">
+                                    <option value="">-- Pilih Divisi --</option>
+                                    <option value="IT">Information Technology (IT)</option>
+                                    <option value="HR">Human Resources (HR)</option>
+                                    <option value="Finance">Finance & Accounting</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Marketing">Marketing & Sales</option>
+                                    <option value="GA">General Affair (GA)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-1">2. Detail Perjalanan</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Lokasi Tujuan <span class="text-red-500">*</span></label>
+                                <input type="text" id="reqLokasi" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Misal: Cikarang Plant / Client SCBD">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah Penumpang <span class="text-red-500">*</span></label>
+                                <input type="number" id="reqPenumpang" min="1" max="30" value="1" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tujuan / Keperluan <span class="text-red-500">*</span></label>
+                            <textarea id="reqTujuan" rows="3" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Uraikan agenda kegiatan perjalanan dinas..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal & Jam Mulai <span class="text-red-500">*</span></label>
+                                <input type="datetime-local" id="reqTglMulai" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal & Jam Selesai <span class="text-red-500">*</span></label>
+                                <input type="datetime-local" id="reqTglSelesai" required class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-1">3. Usulan Unit & Lampiran</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Pilihan Unit Kendaraan (Usulan)</label>
+                                <select id="reqKendaraan" class="w-full text-sm rounded-lg border-slate-300 border p-2.5 focus:ring-2 focus:ring-brand-500 outline-none bg-white"></select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Upload Bukti / Lampiran (Gambar/PDF)</label>
+                                <div class="relative border-2 border-dashed border-slate-300 rounded-lg p-3 hover:border-brand-500 transition text-center cursor-pointer bg-slate-50/50" onclick="document.getElementById('reqLampiran').click()">
+                                    <input type="file" id="reqLampiran" class="hidden" accept="image/*,.pdf" onchange="handleFileSelect(event)">
+                                    <div class="flex items-center justify-center space-x-2 text-xs text-slate-600">
+                                        <i class="fa-solid fa-cloud-arrow-up text-brand-600 text-base"></i>
+                                        <span id="fileNameLabel" class="font-medium">Pilih file nota, surat tugas, atau foto fisik...</span>
+                                    </div>
+                                </div>
+                                <div id="previewContainer" class="hidden mt-2 flex items-center space-x-2">
+                                    <img id="filePreview" class="h-10 w-10 object-cover rounded border">
+                                    <span id="previewName" class="text-xs text-slate-600 truncate max-w-[200px]"></span>
+                                    <button type="button" onclick="removeFile()" class="text-red-500 text-xs hover:underline ml-auto">Hapus</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t flex justify-end space-x-3">
+                        <button type="button" onclick="resetForm()" class="px-4 py-2 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-100">Reset</button>
+                        <button type="submit" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg shadow flex items-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Kirim Pengajuan</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: RIWAYAT SAYA (KARYAWAN)            -->
+        <!-- ========================================== -->
+        <section id="secRiwayatSaya" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Riwayat Pengajuan Saya</h2>
+                        <p class="text-xs text-slate-500">Status reservasi kendaraan yang pernah diajukan.</p>
+                    </div>
+                    <input type="text" id="searchMyHistory" onkeyup="renderMyHistoryTable()" placeholder="Cari lokasi / tujuan..." class="text-xs border rounded-lg px-3 py-2 w-full sm:w-56 outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b">
+                            <tr>
+                                <th class="p-3.5">ID & Tgl</th>
+                                <th class="p-3.5">Tujuan & Detail</th>
+                                <th class="p-3.5">Waktu Pemakaian</th>
+                                <th class="p-3.5">Kendaraan</th>
+                                <th class="p-3.5">Lampiran</th>
+                                <th class="p-3.5">Status</th>
+                                <th class="p-3.5">Catatan GA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblMyHistoryBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: DASHBOARD ADMIN                     -->
+        <!-- ========================================== -->
+        <section id="secDashboardAdmin" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase">Total Reservasi</p>
+                        <p class="text-2xl font-extrabold text-slate-800 mt-1" id="statTotal">0</p>
+                    </div>
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-folder-open text-xl"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-amber-600 uppercase">Menunggu (Pending)</p>
+                        <p class="text-2xl font-extrabold text-amber-600 mt-1" id="statPending">0</p>
+                    </div>
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-hourglass-half text-xl"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-emerald-600 uppercase">Disetujui (Approved)</p>
+                        <p class="text-2xl font-extrabold text-emerald-600 mt-1" id="statApproved">0</p>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-circle-check text-xl"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-rose-600 uppercase">Ditolak / Selesai</p>
+                        <p class="text-2xl font-extrabold text-slate-700 mt-1"><span id="statRejected" class="text-rose-600">0</span> / <span id="statCompleted" class="text-slate-600">0</span></p>
+                    </div>
+                    <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-boxes-packing text-xl"></i></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border p-6">
+                <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-car-side text-brand-600"></i>
+                    <span>Ringkasan Kondisi Armada Kendaraan</span>
+                </h3>
+                <div id="fleetStatusGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: KELOLA PENGAJUAN (ADMIN)            -->
+        <!-- ========================================== -->
+        <section id="secPengajuanMasuk" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border p-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Manajemen Pengajuan Masuk</h2>
+                        <p class="text-xs text-slate-500">Verifikasi, alokasikan kendaraan, dan beri status persetujuan.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-slate-500">Filter:</span>
+                        <select id="filterStatusAdmin" onchange="renderAdminTable()" class="text-xs border rounded-lg px-3 py-2 bg-slate-50 font-medium outline-none">
+                            <option value="ALL">Semua Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b">
+                            <tr>
+                                <th class="p-3.5">ID & Tgl</th>
+                                <th class="p-3.5">Pemohon</th>
+                                <th class="p-3.5">Keperluan & Tujuan</th>
+                                <th class="p-3.5">Waktu Pemakaian</th>
+                                <th class="p-3.5">Kendaraan Dialokasi</th>
+                                <th class="p-3.5">Lampiran</th>
+                                <th class="p-3.5">Status</th>
+                                <th class="p-3.5 text-center">Aksi Verifikasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblAdminBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: MASTER KENDARAAN (ADMIN)            -->
+        <!-- ========================================== -->
+        <section id="secMasterKendaraan" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border p-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Master Data Kendaraan GA</h2>
+                        <p class="text-xs text-slate-500">Kelola inventaris kendaraan dinas operasional kantor.</p>
+                    </div>
+                    <button onclick="openModalKendaraan()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold shadow flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Tambah Kendaraan Baru</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b">
+                            <tr>
+                                <th class="p-3.5">Plat Nomor</th>
+                                <th class="p-3.5">Tipe / Merk Kendaraan</th>
+                                <th class="p-3.5">Kapasitas</th>
+                                <th class="p-3.5">Status Mobil</th>
+                                <th class="p-3.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblKendaraanBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: PUSAT EKSPOR & IMPOR DATA          -->
+        <!-- ========================================== -->
+        <section id="secDataPortability" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- EXPORT SECTION -->
+                <div class="bg-white rounded-2xl shadow-sm border p-6 space-y-4">
+                    <div class="flex items-center space-x-3 border-b pb-3">
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                            <i class="fa-solid fa-file-export text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">Ekspor Data (Download)</h3>
+                            <p class="text-xs text-slate-500">Unduh data sistem ke format CSV / Excel-ready atau JSON.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <div class="p-3.5 border rounded-xl flex items-center justify-between hover:bg-slate-50">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">Laporan Data Reservasi (.CSV)</h4>
+                                <p class="text-[11px] text-slate-500">Ekspor seluruh riwayat reservasi lengkap dengan status.</p>
+                            </div>
+                            <button onclick="exportReservasiCSV()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow flex items-center space-x-1.5">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+
+                        <div class="p-3.5 border rounded-xl flex items-center justify-between hover:bg-slate-50">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">Master Data Kendaraan (.CSV)</h4>
+                                <p class="text-[11px] text-slate-500">Ekspor daftar mobil, plat nomor, dan status armada.</p>
+                            </div>
+                            <button onclick="exportKendaraanCSV()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow flex items-center space-x-1.5">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+
+                        <div class="p-3.5 border rounded-xl flex items-center justify-between hover:bg-slate-50">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">Full System Backup (.JSON)</h4>
+                                <p class="text-[11px] text-slate-500">Backup seluruh data reservasi + armada dalam 1 file JSON.</p>
+                            </div>
+                            <button onclick="exportFullSystemJSON()" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold shadow flex items-center space-x-1.5">
+                                <i class="fa-solid fa-database"></i>
+                                <span>Backup JSON</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IMPORT SECTION -->
+                <div class="bg-white rounded-2xl shadow-sm border p-6 space-y-4">
+                    <div class="flex items-center space-x-3 border-b pb-3">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                            <i class="fa-solid fa-file-import text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">Impor Data (Upload)</h3>
+                            <p class="text-xs text-slate-500">Unggah data dari file CSV / JSON ke dalam aplikasi.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Target Tabel Tujuan Impor</label>
+                            <select id="importTargetTable" class="w-full text-xs rounded-lg border-slate-300 border p-2.5 outline-none bg-white">
+                                <option value="reservasi">Tabel Reservasi (CSV / JSON)</option>
+                                <option value="kendaraan">Master Kendaraan (CSV / JSON)</option>
+                                <option value="full_backup">Restore Full Backup (.JSON)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih File (.CSV atau .JSON)</label>
+                            <input type="file" id="importFileInput" accept=".csv,.json" class="w-full text-xs border rounded-lg p-2 bg-slate-50">
+                        </div>
+
+                        <button onclick="processImportFile()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Proses & Masukkan Data</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Preview Card -->
+            <div id="importPreviewCard" class="hidden bg-white rounded-2xl shadow-sm border p-6 space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-eye text-brand-600"></i>
+                        <span>Pratinjau Data Impor (Preview Before Saving)</span>
+                    </h4>
+                    <button onclick="confirmApplyImport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow">
+                        Konfirmasi & Simpan Ke Sistem
+                    </button>
+                </div>
+                <div class="overflow-x-auto max-h-60 rounded-xl border">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead id="tblImportPreviewHead" class="bg-slate-100 font-bold"></thead>
+                        <tbody id="tblImportPreviewBody" class="divide-y bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>&copy; 2026 General Affair Department - Vercel Ready Fleet System</p>
+    </footer>
+
+    <!-- MODAL 1: APPROVAL ADMIN GA -->
+    <div id="modalApproval" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border space-y-4 relative">
+            <button onclick="closeModalApproval()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-base font-bold text-slate-800 border-b pb-2 flex items-center space-x-2">
+                <i class="fa-solid fa-sliders text-brand-600"></i>
+                <span>Verifikasi Admin GA</span>
+            </h3>
+            <input type="hidden" id="modalResId">
+            <div class="space-y-2 text-xs bg-slate-50 p-3 rounded-xl border">
+                <div class="flex justify-between"><span class="text-slate-500">ID Pengajuan:</span> <span id="mDispId" class="font-bold text-slate-800"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Pemohon:</span> <span id="mDispPemohon" class="font-semibold text-slate-800"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Tujuan:</span> <span id="mDispTujuan" class="text-slate-800"></span></div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Alokasi Kendaraan Final</label>
+                <select id="modalSelectKendaraan" class="w-full text-xs rounded-lg border p-2.5 outline-none bg-white"></select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Persetujuan</label>
+                <select id="modalSelectStatus" class="w-full text-xs rounded-lg border p-2.5 outline-none bg-white font-semibold">
+                    <option value="Approved" class="text-emerald-600 font-bold">Approve (Disetujui)</option>
+                    <option value="Rejected" class="text-rose-600 font-bold">Reject (Ditolak)</option>
+                    <option value="Completed" class="text-slate-700 font-bold">Completed (Perjalanan Selesai)</option>
+                    <option value="Pending" class="text-amber-600">Pending (Tangguhkan)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan GA</label>
+                <textarea id="modalCatatanGA" rows="3" class="w-full text-xs rounded-lg border p-2.5 outline-none" placeholder="Alasan penolakan / instruksi supir..."></textarea>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button onclick="closeModalApproval()" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">Batal</button>
+                <button onclick="saveAdminApproval()" class="px-5 py-2 bg-brand-600 text-white rounded-lg text-xs font-bold shadow">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: KENDARAAN MASTER -->
+    <div id="modalKendaraan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border space-y-4 relative">
+            <button onclick="closeModalKendaraan()" class="absolute top-4 right-4 text-slate-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-base font-bold text-slate-800 border-b pb-2 flex items-center space-x-2">
+                <i class="fa-solid fa-car text-brand-600"></i>
+                <span id="modalKendaraanTitle">Tambah Kendaraan Baru</span>
+            </h3>
+            <form id="formKendaraan" onsubmit="handleSaveKendaraan(event)" class="space-y-4">
+                <input type="hidden" id="kenId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Plat Nomor</label>
+                    <input type="text" id="kenPlat" required placeholder="Contoh: B 1234 CD" class="w-full text-xs rounded-lg border p-2.5 outline-none uppercase">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tipe / Merk</label>
+                    <input type="text" id="kenTipe" required placeholder="Contoh: Toyota Avanza" class="w-full text-xs rounded-lg border p-2.5 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kapasitas (Orang)</label>
+                    <input type="number" id="kenKapasitas" min="1" max="50" required placeholder="7" class="w-full text-xs rounded-lg border p-2.5 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Mobil</label>
+                    <select id="kenStatus" required class="w-full text-xs rounded-lg border p-2.5 outline-none bg-white">
+                        <option value="Tersedia">Tersedia</option>
+                        <option value="Digunakan">Digunakan</option>
+                        <option value="Servis">Servis / Perawatan</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="closeModalKendaraan()" class="px-4 py-2 border rounded-lg text-xs text-slate-600">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-600 text-white rounded-lg text-xs font-bold shadow">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PREVIEW LAMPIRAN -->
+    <div id="modalPreviewFile" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-4 shadow-2xl relative flex flex-col items-center">
+            <button onclick="closeModalPreview()" class="absolute top-3 right-3 text-white bg-slate-800 w-8 h-8 rounded-full flex items-center justify-center text-sm"><i class="fa-solid fa-xmark"></i></button>
+            <h4 class="text-xs font-bold text-slate-600 mb-3 self-start">Lampiran Dokumen Bukti</h4>
+            <div id="previewModalContent" class="w-full max-h-[75vh] overflow-auto flex items-center justify-center p-2"></div>
+        </div>
+    </div>
+
+    <!-- JS SCRIPT LOGIC -->
+    <script>
+        // MOCK DATA DEFAULTS
+        const defaultKendaraan = [
+            { id: 'KND-01', plat: 'B 1420 PQA', tipe: 'Toyota Avanza 1.5 G', kapasitas: 7, status: 'Tersedia' },
+            { id: 'KND-02', plat: 'B 2891 SDU', tipe: 'Toyota Innova Zenix', kapasitas: 7, status: 'Digunakan' },
+            { id: 'KND-03', plat: 'B 9011 WXR', tipe: 'Daihatsu Gran Max Van', kapasitas: 2, status: 'Tersedia' },
+            { id: 'KND-04', plat: 'B 7732 CZA', tipe: 'Mitsubishi Pajero Sport', kapasitas: 7, status: 'Servis' }
+        ];
+
+        const defaultReservasi = [
+            {
+                id: 'RES-2026-001',
+                tglPengajuan: '2026-11-01 09:30',
+                nama: 'Ahmad Karyawan',
+                email: 'ahmad@company.com',
+                divisi: 'IT',
+                tujuan: 'Maintenance Server Cabang Cikarang',
+                lokasi: 'Kawasan Industri Jababeka',
+                penumpang: 3,
+                tglMulai: '2026-11-02T08:00',
+                tglSelesai: '2026-11-02T17:00',
+                kendaraanId: 'KND-01',
+                lampiran: 'https://placehold.co/400x300/0284c7/ffffff?text=Surat+Tugas+IT',
+                status: 'Approved',
+                catatanGA: 'Unit Avanza siap digunakan. Ambil kunci di GA.'
+            },
+            {
+                id: 'RES-2026-002',
+                tglPengajuan: '2026-11-02 14:15',
+                nama: 'Siti Rahma',
+                email: 'siti@company.com',
+                divisi: 'HR',
+                tujuan: 'Kunjungan Client Meeting',
+                lokasi: 'Pacific Place, Jakarta',
+                penumpang: 2,
+                tglMulai: '2026-11-04T09:00',
+                tglSelesai: '2026-11-04T13:00',
+                kendaraanId: 'KND-02',
+                lampiran: null,
+                status: 'Pending',
+                catatanGA: ''
+            }
+        ];
+
+        let currentRole = 'karyawan';
+        let currentUploadedFileBase64 = null;
+        let pendingImportParsedData = null;
+        let pendingImportType = null;
+
+        let dataKendaraan = JSON.parse(localStorage.getItem('ga_kendaraan')) || defaultKendaraan;
+        let dataReservasi = JSON.parse(localStorage.getItem('ga_reservasi')) || defaultReservasi;
+
+        function saveData() {
+            localStorage.setItem('ga_kendaraan', JSON.stringify(dataKendaraan));
+            localStorage.setItem('ga_reservasi', JSON.stringify(dataReservasi));
+            updateBadgesAndStats();
+        }
+
+        window.onload = function() {
+            saveData();
+            populateKendaraanDropdowns();
+            renderMyHistoryTable();
+            renderAdminTable();
+            renderKendaraanTable();
+            renderFleetStatusSummary();
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateStr = tomorrow.toISOString().split('T')[0];
+            document.getElementById('reqTglMulai').value = `${dateStr}T08:00`;
+            document.getElementById('reqTglSelesai').value = `${dateStr}T17:00`;
+        };
+
+        function switchRole(role) {
+            currentRole = role;
+            const btnKaryawan = document.getElementById('btnRoleKaryawan');
+            const btnAdmin = document.getElementById('btnRoleAdmin');
+            const userName = document.getElementById('userName');
+            const userRoleTitle = document.getElementById('userRoleTitle');
+            const userAvatar = document.getElementById('userAvatar');
+
+            const tabForm = document.getElementById('tabFormReservasi');
+            const tabHistory = document.getElementById('tabRiwayatSaya');
+            const tabDash = document.getElementById('tabDashboardAdmin');
+            const tabPengajuan = document.getElementById('tabPengajuanMasuk');
+            const tabMaster = document.getElementById('tabMasterKendaraan');
+
+            if (role === 'karyawan') {
+                btnKaryawan.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white shadow";
+                btnAdmin.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white";
+                userName.textContent = "Ahmad Karyawan";
+                userRoleTitle.textContent = "Requestor (IT)";
+                userAvatar.textContent = "AK";
+
+                tabForm.classList.remove('hidden');
+                tabHistory.classList.remove('hidden');
+                tabDash.classList.add('hidden');
+                tabPengajuan.classList.add('hidden');
+                tabMaster.classList.add('hidden');
+
+                switchTab('form-reservasi');
+            } else {
+                btnAdmin.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white shadow";
+                btnKaryawan.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white";
+                userName.textContent = "Admin GA Specialist";
+                userRoleTitle.textContent = "General Affair Dept";
+                userAvatar.textContent = "GA";
+
+                tabForm.classList.add('hidden');
+                tabHistory.classList.add('hidden');
+                tabDash.classList.remove('hidden');
+                tabPengajuan.classList.remove('hidden');
+                tabMaster.classList.remove('hidden');
+
+                switchTab('dashboard-admin');
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-300', 'hover:bg-slate-700', 'hover:text-white');
+            });
+
+            if(tabId === 'form-reservasi') {
+                document.getElementById('secFormReservasi').classList.remove('hidden');
+                document.getElementById('tabFormReservasi').classList.add('bg-brand-600', 'text-white');
+            } else if(tabId === 'riwayat-saya') {
+                document.getElementById('secRiwayatSaya').classList.remove('hidden');
+                document.getElementById('tabRiwayatSaya').classList.add('bg-brand-600', 'text-white');
+                renderMyHistoryTable();
+            } else if(tabId === 'dashboard-admin') {
+                document.getElementById('secDashboardAdmin').classList.remove('hidden');
+                document.getElementById('tabDashboardAdmin').classList.add('bg-brand-600', 'text-white');
+                renderFleetStatusSummary();
+            } else if(tabId === 'pengajuan-masuk') {
+                document.getElementById('secPengajuanMasuk').classList.remove('hidden');
+                document.getElementById('tabPengajuanMasuk').classList.add('bg-brand-600', 'text-white');
+                renderAdminTable();
+            } else if(tabId === 'master-kendaraan') {
+                document.getElementById('secMasterKendaraan').classList.remove('hidden');
+                document.getElementById('tabMasterKendaraan').classList.add('bg-brand-600', 'text-white');
+                renderKendaraanTable();
+            } else if(tabId === 'data-portability') {
+                document.getElementById('secDataPortability').classList.remove('hidden');
+                document.getElementById('tabDataPortability').classList.add('bg-brand-600', 'text-white');
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                currentUploadedFileBase64 = evt.target.result;
+                document.getElementById('previewContainer').classList.remove('hidden');
+                document.getElementById('filePreview').src = evt.target.result;
+                document.getElementById('previewName').textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeFile() {
+            currentUploadedFileBase64 = null;
+            document.getElementById('reqLampiran').value = '';
+            document.getElementById('previewContainer').classList.add('hidden');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const newRes = {
+                id: 'RES-2026-' + String(dataReservasi.length + 1).padStart(3, '0'),
+                tglPengajuan: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                nama: document.getElementById('reqNama').value,
+                email: document.getElementById('reqEmail').value,
+                divisi: document.getElementById('reqDivisi').value,
+                tujuan: document.getElementById('reqTujuan').value,
+                lokasi: document.getElementById('reqLokasi').value,
+                penumpang: parseInt(document.getElementById('reqPenumpang').value),
+                tglMulai: document.getElementById('reqTglMulai').value,
+                tglSelesai: document.getElementById('reqTglSelesai').value,
+                kendaraanId: document.getElementById('reqKendaraan').value || null,
+                lampiran: currentUploadedFileBase64,
+                status: 'Pending',
+                catatanGA: ''
+            };
+            dataReservasi.unshift(newRes);
+            saveData();
+            showToast('Pengajuan reservasi berhasil dikirim!', 'success');
+            resetForm();
+            switchTab('riwayat-saya');
+        }
+
+        function resetForm() {
+            document.getElementById('formReservasi').reset();
+            removeFile();
+        }
+
+        function populateKendaraanDropdowns() {
+            const dropdown = document.getElementById('reqKendaraan');
+            const modalDropdown = document.getElementById('modalSelectKendaraan');
+            dropdown.innerHTML = '<option value="">-- Bebas / Rekomendasi GA --</option>';
+            modalDropdown.innerHTML = '<option value="">-- Tanpa Mobil --</option>';
+
+            dataKendaraan.forEach(k => {
+                const optText = `${k.plat} - ${k.tipe} (${k.kapasitas} org) [${k.status}]`;
+                dropdown.innerHTML += `<option value="${k.id}">${optText}</option>`;
+                modalDropdown.innerHTML += `<option value="${k.id}">${optText}</option>`;
+            });
+        }
+
+        function getStatusBadge(status) {
+            if(status==='Pending') return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">Pending</span>`;
+            if(status==='Approved') return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Approved</span>`;
+            if(status==='Rejected') return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">Rejected</span>`;
+            return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border">Completed</span>`;
+        }
+
+        function renderMyHistoryTable() {
+            const tbody = document.getElementById('tblMyHistoryBody');
+            const search = document.getElementById('searchMyHistory').value.toLowerCase();
+            const filtered = dataReservasi.filter(r => r.tujuan.toLowerCase().includes(search) || r.lokasi.toLowerCase().includes(search));
+
+            tbody.innerHTML = filtered.map(r => {
+                const k = dataKendaraan.find(x => x.id === r.kendaraanId);
+                const kText = k ? `${k.plat} (${k.tipe})` : 'Belum Ditentukan';
+                const fileHTML = r.lampiran ? `<button onclick="openModalPreview('${r.lampiran}')" class="text-brand-600 font-semibold hover:underline">Lihat</button>` : '-';
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3.5"><div class="font-bold">${r.id}</div><div class="text-[10px] text-slate-400">${r.tglPengajuan}</div></td>
+                        <td class="p-3.5"><div class="font-semibold">${r.lokasi}</div><div class="text-[11px] text-slate-500">${r.tujuan}</div></td>
+                        <td class="p-3.5 text-[11px]">Mulai: ${r.tglMulai.replace('T',' ')}<br>Selesai: ${r.tglSelesai.replace('T',' ')}</td>
+                        <td class="p-3.5">${kText}</td>
+                        <td class="p-3.5">${fileHTML}</td>
+                        <td class="p-3.5">${getStatusBadge(r.status)}</td>
+                        <td class="p-3.5 text-slate-500">${r.catatanGA || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('tblAdminBody');
+            const status = document.getElementById('filterStatusAdmin').value;
+            const filtered = status === 'ALL' ? dataReservasi : dataReservasi.filter(r => r.status === status);
+
+            tbody.innerHTML = filtered.map(r => {
+                const k = dataKendaraan.find(x => x.id === r.kendaraanId);
+                const kText = k ? `${k.plat}<br><span class="text-[10px] text-slate-400">${k.tipe}</span>` : '<span class="text-amber-600">Belum Dialokasi</span>';
+                const fileHTML = r.lampiran ? `<button onclick="openModalPreview('${r.lampiran}')" class="text-brand-600 font-semibold hover:underline">Lampiran</button>` : '-';
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3.5"><div class="font-bold">${r.id}</div><div class="text-[10px] text-slate-400">${r.tglPengajuan}</div></td>
+                        <td class="p-3.5"><div class="font-semibold">${r.nama}</div><div class="text-[10px] text-brand-600">${r.divisi}</div></td>
+                        <td class="p-3.5"><div class="font-medium">${r.lokasi}</div><div class="text-[11px] text-slate-500">${r.tujuan}</div></td>
+                        <td class="p-3.5 text-[11px]">Mulai: ${r.tglMulai.replace('T',' ')}<br>Selesai: ${r.tglSelesai.replace('T',' ')}</td>
+                        <td class="p-3.5">${kText}</td>
+                        <td class="p-3.5">${fileHTML}</td>
+                        <td class="p-3.5">${getStatusBadge(r.status)}</td>
+                        <td class="p-3.5 text-center">
+                            <button onclick="openModalApproval('${r.id}')" class="px-3 py-1 bg-brand-600 text-white rounded text-[11px] font-semibold">Verifikasi</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderKendaraanTable() {
+            const tbody = document.getElementById('tblKendaraanBody');
+            tbody.innerHTML = dataKendaraan.map(k => {
+                let badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Tersedia</span>`;
+                if(k.status==='Digunakan') badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">Digunakan</span>`;
+                if(k.status==='Servis') badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Servis</span>`;
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3.5 font-bold">${k.plat}</td>
+                        <td class="p-3.5">${k.tipe}</td>
+                        <td class="p-3.5">${k.kapasitas} Orang</td>
+                        <td class="p-3.5">${badge}</td>
+                        <td class="p-3.5 text-center space-x-2">
+                            <button onclick="editKendaraan('${k.id}')" class="text-brand-600 font-semibold"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteKendaraan('${k.id}')" class="text-rose-600 font-semibold"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderFleetStatusSummary() {
+            const grid = document.getElementById('fleetStatusGrid');
+            grid.innerHTML = dataKendaraan.map(k => `
+                <div class="p-4 rounded-xl border flex items-center justify-between bg-slate-50">
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">${k.plat}</div>
+                        <div class="text-xs text-slate-600">${k.tipe}</div>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full ${k.status==='Tersedia'?'bg-emerald-100 text-emerald-700':k.status==='Digunakan'?'bg-blue-100 text-blue-700':'bg-rose-100 text-rose-700'}">${k.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateBadgesAndStats() {
+            document.getElementById('statTotal').textContent = dataReservasi.length;
+            document.getElementById('statPending').textContent = dataReservasi.filter(r => r.status==='Pending').length;
+            document.getElementById('statApproved').textContent = dataReservasi.filter(r => r.status==='Approved').length;
+            document.getElementById('statRejected').textContent = dataReservasi.filter(r => r.status==='Rejected').length;
+            document.getElementById('statCompleted').textContent = dataReservasi.filter(r => r.status==='Completed').length;
+            document.getElementById('badgePendingCount').textContent = dataReservasi.filter(r => r.status==='Pending').length;
+            document.getElementById('badgeMyCount').textContent = dataReservasi.length;
+        }
+
+        // APPROVAL MODAL LOGIC
+        function openModalApproval(id) {
+            const res = dataReservasi.find(r => r.id === id);
+            if (!res) return;
+            document.getElementById('modalResId').value = res.id;
+            document.getElementById('mDispId').textContent = res.id;
+            document.getElementById('mDispPemohon').textContent = res.nama;
+            document.getElementById('mDispTujuan').textContent = res.lokasi;
+            document.getElementById('modalSelectKendaraan').value = res.kendaraanId || '';
+            document.getElementById('modalSelectStatus').value = res.status;
+            document.getElementById('modalCatatanGA').value = res.catatanGA || '';
+            document.getElementById('modalApproval').classList.remove('hidden');
+        }
+
+        function closeModalApproval() { document.getElementById('modalApproval').classList.add('hidden'); }
+
+        function saveAdminApproval() {
+            const id = document.getElementById('modalResId').value;
+            const res = dataReservasi.find(r => r.id === id);
+            if (!res) return;
+
+            res.kendaraanId = document.getElementById('modalSelectKendaraan').value || null;
+            res.status = document.getElementById('modalSelectStatus').value;
+            res.catatanGA = document.getElementById('modalCatatanGA').value;
+
+            if(res.kendaraanId) {
+                const k = dataKendaraan.find(x => x.id === res.kendaraanId);
+                if(k) {
+                    if(res.status==='Approved') k.status = 'Digunakan';
+                    else if(res.status==='Completed'||res.status==='Rejected') k.status = 'Tersedia';
+                }
+            }
+            saveData();
+            populateKendaraanDropdowns();
+            renderAdminTable();
+            renderFleetStatusSummary();
+            closeModalApproval();
+            showToast('Persetujuan berhasil disimpan', 'success');
+        }
+
+        // KENDARAAN MODAL LOGIC
+        function openModalKendaraan() {
+            document.getElementById('formKendaraan').reset();
+            document.getElementById('kenId').value = '';
+            document.getElementById('modalKendaraanTitle').textContent = 'Tambah Kendaraan';
+            document.getElementById('modalKendaraan').classList.remove('hidden');
+        }
+
+        function closeModalKendaraan() { document.getElementById('modalKendaraan').classList.add('hidden'); }
+
+        function editKendaraan(id) {
+            const k = dataKendaraan.find(x => x.id === id);
+            if(!k) return;
+            document.getElementById('kenId').value = k.id;
+            document.getElementById('kenPlat').value = k.plat;
+            document.getElementById('kenTipe').value = k.tipe;
+            document.getElementById('kenKapasitas').value = k.kapasitas;
+            document.getElementById('kenStatus').value = k.status;
+            document.getElementById('modalKendaraanTitle').textContent = 'Edit Kendaraan';
+            document.getElementById('modalKendaraan').classList.remove('hidden');
+        }
+
+        function handleSaveKendaraan(e) {
+            e.preventDefault();
+            const id = document.getElementById('kenId').value;
+            const plat = document.getElementById('kenPlat').value.toUpperCase();
+            const tipe = document.getElementById('kenTipe').value;
+            const kapasitas = parseInt(document.getElementById('kenKapasitas').value);
+            const status = document.getElementById('kenStatus').value;
+
+            if(id) {
+                const k = dataKendaraan.find(x => x.id === id);
+                if(k) { k.plat=plat; k.tipe=tipe; k.kapasitas=kapasitas; k.status=status; }
+            } else {
+                dataKendaraan.push({ id: 'KND-'+String(dataKendaraan.length+1).padStart(2,'0'), plat, tipe, kapasitas, status });
+            }
+            saveData();
+            populateKendaraanDropdowns();
+            renderKendaraanTable();
+            renderFleetStatusSummary();
+            closeModalKendaraan();
+            showToast('Master Kendaraan diperbarui', 'success');
+        }
+
+        function deleteKendaraan(id) {
+            if(!confirm('Hapus kendaraan ini?')) return;
+            dataKendaraan = dataKendaraan.filter(k => k.id !== id);
+            saveData();
+            populateKendaraanDropdowns();
+            renderKendaraanTable();
+            renderFleetStatusSummary();
+            showToast('Kendaraan dihapus', 'info');
+        }
+
+        function openModalPreview(url) {
+            const c = document.getElementById('previewModalContent');
+            c.innerHTML = `<img src="${url}" class="max-w-full max-h-[70vh] rounded shadow border">`;
+            document.getElementById('modalPreviewFile').classList.remove('hidden');
+        }
+        function closeModalPreview() { document.getElementById('modalPreviewFile').classList.add('hidden'); }
+
+        // =========================================================
+        // DATA PORTABILITY: EXPORT & IMPORT ENGINE
+        // =========================================================
+        function triggerDownload(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportReservasiCSV() {
+            if(dataReservasi.length === 0) return showToast('Data reservasi kosong!', 'error');
+            
+            const headers = ["ID","Tanggal Pengajuan","Nama","Email","Divisi","Lokasi Tujuan","Tujuan Keperluan","Penumpang","Mulai","Selesai","ID Kendaraan","Status","Catatan GA"];
+            let csvContent = "\uFEFF"; // UTF-8 BOM for Excel
+            csvContent += headers.join(",") + "\n";
+
+            dataReservasi.forEach(r => {
+                const row = [
+                    `"${r.id}"`,
+                    `"${r.tglPengajuan || ''}"`,
+                    `"${r.nama.replace(/"/g, '""')}"`,
+                    `"${r.email}"`,
+                    `"${r.divisi}"`,
+                    `"${r.lokasi.replace(/"/g, '""')}"`,
+                    `"${r.tujuan.replace(/"/g, '""')}"`,
+                    r.penumpang,
+                    `"${r.tglMulai}"`,
+                    `"${r.tglSelesai}"`,
+                    `"${r.kendaraanId || ''}"`,
+                    `"${r.status}"`,
+                    `"${(r.catatanGA || '').replace(/"/g, '""')}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            triggerDownload(csvContent, `Laporan_Reservasi_GA_${new Date().toISOString().substring(0,10)}.csv`, 'text/csv;charset=utf-8;');
+            showToast('Laporan Reservasi (.CSV) berhasil diunduh!', 'success');
+        }
+
+        function exportKendaraanCSV() {
+            if(dataKendaraan.length === 0) return showToast('Data kendaraan kosong!', 'error');
+
+            const headers = ["ID Kendaraan","Plat Nomor","Tipe Kendaraan","Kapasitas Penumpang","Status Mobil"];
+            let csvContent = "\uFEFF";
+            csvContent += headers.join(",") + "\n";
+
+            dataKendaraan.forEach(k => {
+                const row = [
+                    `"${k.id}"`,
+                    `"${k.plat}"`,
+                    `"${k.tipe.replace(/"/g, '""')}"`,
+                    k.kapasitas,
+                    `"${k.status}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            triggerDownload(csvContent, `Master_Kendaraan_GA_${new Date().toISOString().substring(0,10)}.csv`, 'text/csv;charset=utf-8;');
+            showToast('Master Kendaraan (.CSV) berhasil diunduh!', 'success');
+        }
+
+        function exportFullSystemJSON() {
+            const backupObj = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                kendaraan: dataKendaraan,
+                reservasi: dataReservasi
+            };
+            const jsonStr = JSON.stringify(backupObj, null, 2);
+            triggerDownload(jsonStr, `Backup_System_GA_${new Date().toISOString().substring(0,10)}.json`, 'application/json');
+            showToast('Full Backup JSON berhasil diunduh!', 'success');
+        }
+
+        function processImportFile() {
+            const fileInput = document.getElementById('importFileInput');
+            const target = document.getElementById('importTargetTable').value;
+            const file = fileInput.files[0];
+
+            if (!file) return showToast('Pilih file CSV atau JSON terlebih dahulu!', 'error');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                try {
+                    if (file.name.endsWith('.json')) {
+                        const parsed = JSON.parse(content);
+                        if(target === 'full_backup' && parsed.kendaraan && parsed.reservasi) {
+                            pendingImportParsedData = parsed;
+                            pendingImportType = 'full_backup';
+                            renderImportPreview(['Type', 'Records Count'], [['Kendaraan', parsed.kendaraan.length], ['Reservasi', parsed.reservasi.length]]);
+                        } else if(Array.isArray(parsed)) {
+                            pendingImportParsedData = parsed;
+                            pendingImportType = target;
+                            renderImportPreview(Object.keys(parsed[0] || {}), parsed.map(o => Object.values(o)));
+                        } else {
+                            throw new Error('Format JSON tidak sesuai.');
+                        }
+                    } else if (file.name.endsWith('.csv')) {
+                        const lines = content.replace(/\r/g, '').split('\n').filter(l => l.trim() !== '');
+                        if(lines.length < 2) throw new Error('File CSV kosong.');
+                        
+                        const headers = lines[0].split(',').map(h => h.replace(/^["\uFEFF]|["\s]/g, ''));
+                        const rows = lines.slice(1).map(line => line.split(',').map(v => v.replace(/^"|"$/g, '')));
+
+                        pendingImportParsedData = { headers, rows, target };
+                        pendingImportType = 'csv_' + target;
+                        renderImportPreview(headers, rows);
+                    }
+                    document.getElementById('importPreviewCard').classList.remove('hidden');
+                    showToast('File berhasil dibaca. Silakan pratinjau data!', 'info');
+                } catch(err) {
+                    showToast('Gagal membaca file: ' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function renderImportPreview(headers, rows) {
+            const thead = document.getElementById('tblImportPreviewHead');
+            const tbody = document.getElementById('tblImportPreviewBody');
+
+            thead.innerHTML = `<tr>${headers.map(h => `<th class="p-2 border">${h}</th>`).join('')}</tr>`;
+            tbody.innerHTML = rows.slice(0, 10).map(r => `<tr>${r.map(c => `<td class="p-2 border truncate max-w-xs">${c}</td>`).join('')}</tr>`).join('');
+        }
+
+        function confirmApplyImport() {
+            if(!pendingImportParsedData) return;
+
+            if(pendingImportType === 'full_backup') {
+                dataKendaraan = pendingImportParsedData.kendaraan;
+                dataReservasi = pendingImportParsedData.reservasi;
+            } else if(pendingImportType === 'csv_kendaraan') {
+                pendingImportParsedData.rows.forEach((r, idx) => {
+                    if(r.length >= 4) {
+                        dataKendaraan.push({
+                            id: r[0] || 'KND-IMP-' + idx,
+                            plat: r[1] || 'B 0000 UNK',
+                            tipe: r[2] || 'Unit Import',
+                            kapasitas: parseInt(r[3]) || 4,
+                            status: r[4] || 'Tersedia'
+                        });
+                    }
+                });
+            } else if(pendingImportType === 'csv_reservasi') {
+                pendingImportParsedData.rows.forEach((r, idx) => {
+                    if(r.length >= 6) {
+                        dataReservasi.unshift({
+                            id: r[0] || 'RES-IMP-' + idx,
+                            tglPengajuan: r[1] || new Date().toISOString().substring(0,10),
+                            nama: r[2] || 'User Import',
+                            email: r[3] || 'user@import.com',
+                            divisi: r[4] || 'GA',
+                            lokasi: r[5] || 'Tujuan Import',
+                            tujuan: r[6] || 'Keperluan Import',
+                            penumpang: parseInt(r[7]) || 1,
+                            tglMulai: r[8] || '',
+                            tglSelesai: r[9] || '',
+                            kendaraanId: r[10] || null,
+                            status: r[11] || 'Pending',
+                            catatanGA: r[12] || ''
+                        });
+                    }
+                });
+            }
+
+            saveData();
+            populateKendaraanDropdowns();
+            renderMyHistoryTable();
+            renderAdminTable();
+            renderKendaraanTable();
+            renderFleetStatusSummary();
+
+            document.getElementById('importPreviewCard').classList.add('hidden');
+            document.getElementById('importFileInput').value = '';
+            showToast('Data impor berhasil disimpan ke sistem!', 'success');
+        }
+
+        // TOAST UTILITY
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            let bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
+            toast.className = `pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-xl shadow-lg ${bg} text-white text-xs font-semibold transition-all duration-300 opacity-0 translate-y-2`;
+            toast.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-triangle-exclamation':'fa-circle-info'}"></i><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+    </script>
+</body>
+</html>
